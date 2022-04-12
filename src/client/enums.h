@@ -19,7 +19,6 @@ class CompressionType : public QObject {
 public:
     enum Enum {
         NONE = 0x0,
-        GZIP = 0x1,
         ZLIB = 0x2
     };
 

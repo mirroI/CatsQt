@@ -1,0 +1,8 @@
+# idea
+.idea
+
+# cmake
+cmake-build-*
+
+CMakeFiles
+CMakeLists.txt.user

@@ -17,6 +17,8 @@ CATS Client отвечает отправку сообщений на серве
 #include <QHostAddress>
 #include <QCryptographicHash>
 
+#include "mono.h"
+
 #include "async_tcp_socket.h"
 #include "models.h"
 #include "../byte_buf.h"
@@ -27,7 +29,6 @@ CATS Client отвечает отправку сообщений на серве
 #define ID_LIMIT 0x8000
 #define PING_AT 90000
 
-#define MAX_BYTE_BUF_SIZE 16384
 #define FILE_MAX_CHUNK_SIZE 65536
 
 class CatsConnect : public QObject {
@@ -70,7 +71,7 @@ class CatsConnect : public QObject {
  public:
 	bool isConnected() const;
 
-	void sendMessage(CatsAbstractRequest *);
+	Mono<CatsAbstractResponse> *sendMessage(CatsAbstractRequest *);
 
 	QDateTime getServerDateTime() const;
 

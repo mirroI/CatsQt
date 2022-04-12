@@ -15,4 +15,7 @@ add_executable(${PROJEC_NAME}Test ${SOURCES})
 target_link_libraries(${PROJEC_NAME}Test PRIVATE
         Qt${QT_VERSION_MAJOR}::Test
         Cifrazia::${PROJECT_NAME}
+        ${CMAKE_SOURCE_DIR}/libs/libReactorCore.a
         )
+
+include_directories(${CMAKE_SOURCE_DIR}/includes/reactor_core)

@@ -14,7 +14,9 @@ bool CatsConnect::isConnected() const {
     return status == CatsStatus::CONNECTED;
 }
 
-void CatsConnect::sendMessage(CatsAbstractRequest *abstractRequest) {
+Mono<CatsAbstractResponse> *CatsConnect::sendMessage(CatsAbstractRequest *abstractRequest) {
+	Mono<CatsAbstractResponse> *mono = nullptr;
+
     if (CatsRequest *request = dynamic_cast<CatsRequest *>(abstractRequest)) {
         if (request->getHeader()->getHeaderType() != HeaderType::CHILDREN) {
             request->getHeader()->setMessageId(incrementMessageId);
@@ -25,10 +27,17 @@ void CatsConnect::sendMessage(CatsAbstractRequest *abstractRequest) {
             }
         }
 
+		mono = Mono<CatsAbstractResponse>::create([=](MonoSink<CatsAbstractResponse> *monoSink) {
+			request->setMonoSink(monoSink);
+		});
         waitingResponces.insert(request->getHeader()->getMessageId(), request);
-    }
+    } else {
+
+	}
 
     writeQueue.append(abstractRequest);
+
+	return mono;
 }
 
 QDateTime CatsConnect::getServerDateTime() const {
@@ -181,7 +190,7 @@ void CatsConnect::responseMessageCollected() {
             }
 
             if (waitingResponces.contains(header->getMessageId())) {
-                waitingResponces.value(header->getMessageId())->emitResponseHandler(response);
+                waitingResponces.value(header->getMessageId())->getMonoSink()->success(response);
             } else if (header->getMessageId() > ID_LIMIT) {
                 qDebug() << QString("CATS broadcast %0 %1")
                             .arg(QString("0x%0").arg(static_cast<CatsBasicHeader *>(response->getHeader())->getHandlerId(), 4, 16, QLatin1Char('0')).toUpper())
@@ -326,7 +335,7 @@ void CatsConnect::onBytesWritten(qint64 bytesSent) {
             if (CatsRequest *request = dynamic_cast<CatsRequest *>(this->request)) {
                 CatsInputHeader *header = static_cast<CatsInputHeader *>(request->getHeader());
 
-                request->emitWriteProgessHandler(requestBytesSent, header->getDataLenght());
+                request->emitWriteProgressHandler(requestBytesSent, header->getDataLenght());
 
                 if (header->getDataType() == DataType::FILES) {
                     writeFileChunk();
